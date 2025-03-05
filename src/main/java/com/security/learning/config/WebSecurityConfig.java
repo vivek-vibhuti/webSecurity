@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -17,9 +18,19 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login", "/register", "/public/**").permitAll() // Allow login & register pages
                         .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults()); // Enables default login form
+                .formLogin(form -> form
+                        .loginPage("/login")  // Custom login page
+                        .permitAll()          // Allow all users to access login
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout") // Custom logout URL
+                        .logoutSuccessUrl("/login?logout") // Redirect to login after logout
+                        .permitAll()
+                );
+
         return http.build();
     }
 }
